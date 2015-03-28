@@ -1,0 +1,26 @@
+body {
+	padding: 5px;
+}
+
+.edit {
+	height: 100px;
+	width: 40%;
+	border: 1px solid black;
+	position: relative;
+}
+
+#wrapper1 {
+	position: relative;
+}
+
+#suggests {
+	top: 0;
+	left: 20px;
+	min-height: 25px;
+	position: absolute;
+	visibility: hidden;
+}
+
+.completion {
+	display: block;
+}
