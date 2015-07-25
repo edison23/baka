@@ -7,7 +7,7 @@ function getCaretWord(ctrl) {
 
 	// get contents of the element, remove all new lines and stuff and split it to array by spaces
 	var text_array = sel.anchorNode.textContent.replace(/(\r\n|\n|\r)/gm,"").split(" ")
-	console.log(text_array);
+	// console.log(text_array);
 
 	// get position of the caret relative to the selection start
 	var offset = sel.anchorOffset
@@ -31,15 +31,19 @@ function getCaretWord(ctrl) {
 			// 	);
 
 			if (text_array[text_array.length-1] == "" ) {
-				word.text = text_array[i-1] + "+" + text_array[i] + "+";
+				word.text = text_array[i] + "+";
+				console.log("mezera");
+				console.log(i, text_array);
 			}
 			else {
 				word.text = text_array[i-1] + "+" + text_array[i];
+				console.log("vole pyco uz");
+				console.log(i, text_array);
 			}
 
-			word.text = text_array[i];
 			word.index = i;
 			word.selection = text_array;
+			// console.log(word.text);
 			return(word);
 		}
 		else {
@@ -336,11 +340,13 @@ $(document).ready(function() {
 		// field has to be filled again to refresh the contents (after it was typed)
 		field = $("#editor1");
 		var current = getCaretWord(this);
+		console.log("http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + current.text);
+
 		// console.log(word)
 		$.ajax({
 			
 			// spaces replaced for "%20" bcs URLs can't have spaces in it (also could use plus sign instead of %20)
-			url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + current.text.replace(" ", "%20"),
+			url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + current.text,
 			word: {},
 			success: function( suggests ) {
 				// split the returned array by tabs and leave only 5 results
