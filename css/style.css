@@ -1,12 +1,28 @@
+/* 2015-07-25 20:40:42 --zmena na novy napad */
+
 body {
 	padding: 5px;
 }
 
 .edit {
-	height: 100px;
-	width: 40%;
+	height: 300px;
+	width: 100%;
 	border: 1px solid black;
 	position: relative;
+}
+
+#editor1 {
+	color: #444;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+#shadow1 {
+	color: #888;
+	position: absolute;
+	top: 30px;
+	left: 0px;
 }
 
 #wrapper1 {
