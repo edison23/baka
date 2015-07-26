@@ -44,12 +44,26 @@ function insertCompletion(editorId, completion) {
 }
 
 function savePosition(el) {
-	// console.log(window.getSelection().getRangeAt(0));
 	return window.getSelection().getRangeAt(0);
 }
 
-function restorePosition(el, pos) {
-	window.getSelection.addRange(pos);
+function restorePosition(pos, el) {
+	var startNode = el.firstChild.firstChild;
+	var endNode = el.childNodes[0].firstChild;
+
+	var range = document.createRange();
+	range.setStart(startNode, pos);
+	range.setEnd(endNode, pos);
+	// range.collapse(true); //to start
+	
+	var sel = window.getSelection();
+	sel.removeAllRanges();
+	
+	sel.addRange(range);
+}
+
+function gEl(id) {
+	return getElementsById(id);
 }
 
 $( document ).ready(function() {
@@ -61,11 +75,13 @@ $( document ).ready(function() {
 	document.getElementById('editor1').addEventListener("keyup", onKeyUp);
 
 	function onKeyDown(e) {
+		// console.log("le", completion.length);
 		if (e.keyCode == 9) {
-			position = savePosition($(editorId));
+			var position = savePosition($(editorId));
+			var pos = position.startOffset;
 			e.preventDefault();
 			insertCompletion(editorId, completion);
-			restorePosition(position);
+			restorePosition(pos+completion.length, document.getElementById('editor1'));
 		}
 	}
 
