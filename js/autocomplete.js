@@ -1,5 +1,5 @@
 function copyContent(editorText, shadowId) {
-	$(shadowId).html(editorText);
+	$("#" + shadowId).html(editorText);
 }
 
 function sliceContent(editorText) {
@@ -17,25 +17,14 @@ function getSuggestions(words, amount) {
 }
 
 function printCompletion(el, text) {
-	$(el + " p").append( document.createTextNode(text));
-	$(el + " p").html($(el + " p").html().replace("<br>", "")).append("<br>");
+	var activeLine = document.getElementById(el).lastChild;
+	activeLine.innerHTML = activeLine.innerHTML.replace("<br>", text + "<br>")
 }
 
 function selectSuggestion(suggestions, currentWord, shadowId, press) {
 	var suggestion = suggestions[1];
 	var completion = suggestion.replace(currentWord, ""); //not entirely bullet proof - can replace sth else
 	printCompletion(shadowId, completion)
-	return completion;
-}
-
-function main(editorId, shadowId, press) {
-	var amount = 1;
-	var editorText = $(editorId).html();
-
-	copyContent(editorText, shadowId);
-	var words = sliceContent(editorText);
-	var suggestions = getSuggestions(words, amount);
-	var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
 	return completion;
 }
 
@@ -62,26 +51,32 @@ function restorePosition(pos, el) {
 	sel.addRange(range);
 }
 
-function gEl(id) {
-	return getElementsById(id);
+function main(editorId, shadowId, press) {
+	var amount = 1;
+	var editorText = $("#" + editorId).html();
+
+	copyContent(editorText, shadowId);
+	var words = sliceContent(editorText);
+	var suggestions = getSuggestions(words, amount);
+	var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
+	return completion;
 }
 
 $( document ).ready(function() {
 	var completion;
-	var editorId = '#editor1';
-	var shadowId = '#shadow1';
+	var editorId = 'editor1';
+	var shadowId = 'shadow1';
 
 	document.getElementById('editor1').addEventListener("keydown", onKeyDown);
 	document.getElementById('editor1').addEventListener("keyup", onKeyUp);
 
 	function onKeyDown(e) {
-		// console.log("le", completion.length);
 		if (e.keyCode == 9) {
-			var position = savePosition($(editorId));
+			var position = savePosition($("#" + editorId));
 			var pos = position.startOffset;
 			e.preventDefault();
 			insertCompletion(editorId, completion);
-			restorePosition(pos+completion.length, document.getElementById('editor1'));
+			restorePosition(pos+completion.length, document.getElementById(editorId));
 		}
 	}
 
