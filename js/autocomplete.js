@@ -4,16 +4,46 @@ function copyContent(editorText, shadowId) {
 
 function sliceContent(editorText) {
 	var lines = editorText.split("<br>");
-	var words = lines[lines.length-2]
+	var line = lines[lines.length-2]
 					.replace(/(\&nbsp\;)/gm, " ")
-					.replace(/(<.*?>)/gm, "")
-					.split(/[\s,]+/);
+					.replace(/(<.*?>)/gm, "");
+	var words = line.split(/[ ,-]+/);
+	
+	// this is to get rid of the empty item on the eng of array 
+	// and to add item w/ space in case the line ended w/ space
+	if (line.lastIndexOf(" ") == line.length - 1) {
+		words.pop();
+		words.push(" ");
+	}
 	return words;
 }
 
 function getSuggestions(words, amount) {
-	// hic sunt leones...ehm, ajaxes
-	return ["radši", "radil", "raději", "rada", "radosti", "radost", "radnice", "radu", "rady", "rad", "ranní"];
+	var stringForServer = ""
+	stringForServer = words.slice(0,amount).join("+");
+
+	$.ajax({
+		url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + stringForServer,
+		// using supposedly depricated done, error, complete instead of new done, fail, always
+		// because.. well, the new ones dont fire anything.. (http://api.jquery.com/jquery.ajax/)
+		success: function(suggests) {
+			suggests = suggests.split("\t").slice(0,2)
+			// console.log(suggests);
+			justBcsFuckinCallbacks(suggests);
+		},
+		error: function() {
+			console.log("error in ajax...")
+		},
+		complete: function(e, xhr, settings) {
+			console.log("status code: ", e.status )
+		},
+	});
+	// return ["radši", "radil", "raději", "rada", "radosti", "radost", "radnice", "radu", "rady", "rad", "ranní"];
+}
+
+function justBcsFuckinCallbacks(suggests) {
+	// for now the first suggestion, bcs it's the most frequent a/w
+	selectSuggestion(suggests[0]);
 }
 
 function printCompletion(el, text) {
@@ -21,20 +51,10 @@ function printCompletion(el, text) {
 	activeLine.innerHTML = activeLine.innerHTML.replace("<br>", text + "<br>");
 }
 
-function selectSuggestion(suggestions, currentWord, shadowId, press) {
-	// var longest = arr.reduce(function (a, b) { return a.length > b.length ? a : b; });
-	var maxLenI = 0, curLen = 0;
-	
-	for (var i = 0; i < suggestions.length; i++) {
-		curLen = suggestions[i].length;
-		maxLen = suggestions[maxLenI].length;
-		if (curLen > maxLen) {
-			maxLenI = i;
-		};
-	};
-	
-	var suggestion = suggestions[maxLenI];
+function selectSuggestion(suggestion, currentWord, shadowId) {
 
+	console.log("beeeeeeeeeee",currentWord);
+	// suggestion = "hladce"
 	if (suggestion.indexOf(currentWord) == 0 && currentWord != "") {
 		var completion = suggestion.replace(currentWord, ""); //not entirely bullet proof - can replace sth else
 		printCompletion(shadowId, completion);
@@ -72,14 +92,17 @@ function restorePosition(pos, el) {
 }
 
 function main(editorId, shadowId, press) {
-	var amount = 1;
+	var amount = 3;
 	var editorText = $("#" + editorId).html();
 
 	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
-	var suggestions = getSuggestions(words, amount);
-	var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
-	return completion;
+	var currentWord =  words[words.length-1];
+	getSuggestions(words, amount, currentWord, shadowId);
+	// console.log(suggestions);
+	// return 0;
+	// var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
+	// return completion;
 }
 
 $( document ).ready(function() {
@@ -101,7 +124,7 @@ $( document ).ready(function() {
 	}
 
 	function onKeyUp(e) {
-		completion = main(editorId, shadowId, e)
+		main(editorId, shadowId, e)
 	}
 
 });
