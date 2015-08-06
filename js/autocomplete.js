@@ -13,18 +13,38 @@ function sliceContent(editorText) {
 
 function getSuggestions(words, amount) {
 	// hic sunt leones...ehm, ajaxes
-	return ["penis", "vagvaina"];
+	return ["radši", "radil", "raději", "rada", "radosti", "radost", "radnice", "radu", "rady", "rad", "ranní"];
 }
 
 function printCompletion(el, text) {
 	var activeLine = document.getElementById(el).lastChild;
-	activeLine.innerHTML = activeLine.innerHTML.replace("<br>", text + "<br>")
+	activeLine.innerHTML = activeLine.innerHTML.replace("<br>", text + "<br>");
 }
 
 function selectSuggestion(suggestions, currentWord, shadowId, press) {
-	var suggestion = suggestions[1];
-	var completion = suggestion.replace(currentWord, ""); //not entirely bullet proof - can replace sth else
-	printCompletion(shadowId, completion)
+	// var longest = arr.reduce(function (a, b) { return a.length > b.length ? a : b; });
+	var maxLenI = 0, curLen = 0;
+	
+	for (var i = 0; i < suggestions.length; i++) {
+		curLen = suggestions[i].length;
+		maxLen = suggestions[maxLenI].length;
+		if (curLen > maxLen) {
+			maxLenI = i;
+		};
+	};
+	
+	var suggestion = suggestions[maxLenI];
+
+	if (suggestion.indexOf(currentWord) == 0 && currentWord != "") {
+		var completion = suggestion.replace(currentWord, ""); //not entirely bullet proof - can replace sth else
+		printCompletion(shadowId, completion);
+	}
+
+	else if (currentWord == "") {
+		var completion = suggestion; // just to not make this so confusing
+		printCompletion(shadowId, completion);
+	}
+
 	return completion;
 }
 
