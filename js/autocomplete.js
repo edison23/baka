@@ -20,7 +20,11 @@ function sliceContent(editorText) {
 
 function getSuggestions(words, amount, coalback) {
 	var stringForServer = ""
-	stringForServer = words.slice(0,amount).join("+");
+	if (words.length <= amount) {
+		amount = words.length;
+	}
+	stringForServer = words.slice(words.length-amount, words.length).join("+");
+	console.log(stringForServer);
 
 	$.ajax({
 		url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + stringForServer,
@@ -48,7 +52,7 @@ function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
 	// console.log("beeeeeeeeeee",suggestions, currentWord, editorId, shadowId, press);
 	// for now only one completion supported
 	// working with [1], bcs there's a weird newline in the string i can't get rid of (TODO)
-	suggestion = suggestions.split("\t")[1].replace("/\W/g", "");
+	suggestion = suggestions.split("\t")[1];
 
 	// if the suggestion actually is the beggining of the work (safety measure)
 	// and there hasn't been a space at the end of line
