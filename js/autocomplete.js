@@ -18,7 +18,7 @@ function sliceContent(editorText) {
 	return words;
 }
 
-function getSuggestions(words, amount) {
+function getSuggestions(words, amount, coalback) {
 	var stringForServer = ""
 	stringForServer = words.slice(0,amount).join("+");
 
@@ -26,11 +26,7 @@ function getSuggestions(words, amount) {
 		url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + stringForServer,
 		// using supposedly depricated done, error, complete instead of new done, fail, always
 		// because.. well, the new ones dont fire anything.. (http://api.jquery.com/jquery.ajax/)
-		success: function(suggests) {
-			suggests = suggests.split("\t").slice(0,2)
-			// console.log(suggests);
-			justBcsFuckinCallbacks(suggests);
-		},
+		success: coalback,
 		error: function() {
 			console.log("error in ajax...")
 		},
@@ -51,9 +47,9 @@ function printCompletion(el, text) {
 	activeLine.innerHTML = activeLine.innerHTML.replace("<br>", text + "<br>");
 }
 
-function selectSuggestion(suggestion, currentWord, shadowId) {
+function handleSuggestion(currentWord, shadowId, suggestion) {
 
-	console.log("beeeeeeeeeee",currentWord);
+	console.log("beeeeeeeeeee",suggestion, currentWord, shadowId);
 	// suggestion = "hladce"
 	if (suggestion.indexOf(currentWord) == 0 && currentWord != "") {
 		var completion = suggestion.replace(currentWord, ""); //not entirely bullet proof - can replace sth else
@@ -98,7 +94,7 @@ function main(editorId, shadowId, press) {
 	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
 	var currentWord =  words[words.length-1];
-	getSuggestions(words, amount, currentWord, shadowId);
+	getSuggestions(words, amount, handleSuggestion.bind(null, currentWord, shadowId));
 	// console.log(suggestions);
 	// return 0;
 	// var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
