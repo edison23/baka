@@ -9,8 +9,8 @@ function sliceContent(editorText) {
 					.replace(/(<.*?>)/gm, "");
 	var words = line.split(/[ ,-]+/);
 	
-	// this is to get rid of the empty item on the eng of array 
-	// and to add item w/ space in case the line ended w/ space
+	// in case the line ended w/ space this is to get rid of 
+	// the empty item on the end of array and to add item w/ space
 	if (line.lastIndexOf(" ") == line.length - 1) {
 		words.pop();
 		words.push(" ");
@@ -31,15 +31,11 @@ function getSuggestions(words, amount, coalback) {
 			console.log("error in ajax...")
 		},
 		complete: function(e, xhr, settings) {
-			console.log("status code: ", e.status )
+			// console.log(stringForServer);
+			// console.log("status code: ", e.status )
 		},
 	});
 	// return ["radši", "radil", "raději", "rada", "radosti", "radost", "radnice", "radu", "rady", "rad", "ranní"];
-}
-
-function justBcsFuckinCallbacks(suggests) {
-	// for now the first suggestion, bcs it's the most frequent a/w
-	selectSuggestion(suggests[0]);
 }
 
 function printCompletion(el, text) {
@@ -47,25 +43,36 @@ function printCompletion(el, text) {
 	activeLine.innerHTML = activeLine.innerHTML.replace("<br>", text + "<br>");
 }
 
-function handleSuggestion(currentWord, shadowId, suggestion) {
+function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
 
-	console.log("beeeeeeeeeee",suggestion, currentWord, shadowId);
-	// suggestion = "hladce"
-	if (suggestion.indexOf(currentWord) == 0 && currentWord != "") {
-		var completion = suggestion.replace(currentWord, ""); //not entirely bullet proof - can replace sth else
+	// console.log("beeeeeeeeeee",suggestions, currentWord, editorId, shadowId, press);
+	// for now only one completion supported
+	// working with [1], bcs there's a weird newline in the string i can't get rid of (TODO)
+	suggestion = suggestions.split("\t")[1].replace("/\W/g", "");
+
+	// if the suggestion actually is the beggining of the work (safety measure)
+	// and there hasn't been a space at the end of line
+	if (suggestion.indexOf(currentWord) >= 0 && currentWord != " ") {
+		//not entirely bullet proof - can replace sth else in the word
+		var completion = suggestion.replace(currentWord, "");
 		printCompletion(shadowId, completion);
+		if (press.keyCode == 9) {
+			var position = savePosition($("#" + editorId));
+			var pos = position.startOffset;
+			printCompletion(editorId, completion);
+			restorePosition(pos+completion.length, document.getElementById(editorId));
+		}
 	}
 
-	else if (currentWord == "") {
+	else if (currentWord == " ") {
 		var completion = suggestion; // just to not make this so confusing
 		printCompletion(shadowId, completion);
+		if (press.keyCode == 9) {
+			printCompletion(editorId, completion);
+		}
 	}
 
 	return completion;
-}
-
-function insertCompletion(editorId, completion) {
-	printCompletion(editorId, completion);
 }
 
 function savePosition(el) {
@@ -94,8 +101,7 @@ function main(editorId, shadowId, press) {
 	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
 	var currentWord =  words[words.length-1];
-	getSuggestions(words, amount, handleSuggestion.bind(null, currentWord, shadowId));
-	// console.log(suggestions);
+	getSuggestions(words, amount, handleSuggestion.bind(null, currentWord, editorId, shadowId, press));
 	// return 0;
 	// var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
 	// return completion;
@@ -114,13 +120,13 @@ $( document ).ready(function() {
 			var position = savePosition($("#" + editorId));
 			var pos = position.startOffset;
 			e.preventDefault();
-			insertCompletion(editorId, completion);
-			restorePosition(pos+completion.length, document.getElementById(editorId));
-		}
-	}
+			// insertCompletion(editorId, completion);
+			// restorePosition(pos+completion.length, document.getElementById(editorId));
+		};
+	};
 
 	function onKeyUp(e) {
 		main(editorId, shadowId, e)
-	}
+	};
 
 });
