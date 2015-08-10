@@ -15,6 +15,11 @@ function sliceContent(editorText) {
 		words.pop();
 		words.push(" ");
 	}
+
+	// discard words shorter than a few characters
+	// if (words[0].length < 3) {
+	// 	words = words.shitf();
+	// }
 	return words;
 }
 
@@ -48,7 +53,6 @@ function printCompletion(el, text) {
 	if (el == "editor1") {
 		var position = savePosition($("#" + el));
 		var pos = position.startOffset;
-		console.log(pos);
 	}
 	
 	var activeLine = document.getElementById(el).lastChild;
@@ -65,7 +69,7 @@ function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
 	// console.log("beeeeeeeeeee",suggestions, currentWord, editorId, shadowId, press);
 	// for now only one completion supported
 	// working with [1], bcs there's a weird newline in the string i can't get rid of (TODO)
-	suggestion = suggestions.split("\t")[1];
+	suggestion = suggestions.split("\t")[0].replace(/\W/g, "");
 
 	// if the suggestion actually is the beggining of the work (safety measure)
 	// and there hasn't been a space at the end of line
