@@ -24,7 +24,6 @@ function getSuggestions(words, amount, coalback) {
 		amount = words.length;
 	}
 	stringForServer = words.slice(words.length-amount, words.length).join("+");
-	console.log(stringForServer);
 
 	$.ajax({
 		url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + stringForServer,
@@ -43,8 +42,22 @@ function getSuggestions(words, amount, coalback) {
 }
 
 function printCompletion(el, text) {
+	// this conditioning for editor is very retarded. However, it's needed
+	// since we cant restore position to shadow editor which would then took
+	// focus
+	if (el == "editor1") {
+		var position = savePosition($("#" + el));
+		var pos = position.startOffset;
+		console.log(pos);
+	}
+	
 	var activeLine = document.getElementById(el).lastChild;
 	activeLine.innerHTML = activeLine.innerHTML.replace("<br>", text + "<br>");
+	
+	if (pos) {
+		restorePosition(pos+text.length, document.getElementById(el));
+	}
+
 }
 
 function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
@@ -61,10 +74,7 @@ function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
 		var completion = suggestion.replace(currentWord, "");
 		printCompletion(shadowId, completion);
 		if (press.keyCode == 9) {
-			var position = savePosition($("#" + editorId));
-			var pos = position.startOffset;
 			printCompletion(editorId, completion);
-			restorePosition(pos+completion.length, document.getElementById(editorId));
 		}
 	}
 
