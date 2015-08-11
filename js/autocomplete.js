@@ -1,3 +1,5 @@
+var timeout;
+
 function copyContent(editorText, shadowId) {
 	$("#" + shadowId).html(editorText);
 }
@@ -19,26 +21,40 @@ function sliceContent(editorText) {
 	return words;
 }
 
-function getSuggestions(words, amount, coalback) {
+function getSuggestions(words, amount, currentWord, editorId, shadowId, press, coalback) {
+	// this tests for tab key and then copies the last word from shadow editor
+	// as that should be the completion
+	// WTF
+	if (press.keyCode == 9) {
+		var shadowText = $('#'+shadowId).html();
+		var shadowLast = sliceContent(shadowText).pop();
+		var completion = shadowLast.replace(currentWord, "");
+		printCompletion(editorId, completion);
+	}
+
 	var stringForServer = ""
 	if (words.length <= amount) {
 		amount = words.length;
 	}
 	stringForServer = words.slice(words.length-amount, words.length).join("+");
 
-	$.ajax({
-		url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + stringForServer,
-		// using supposedly depricated done, error, complete instead of new done, fail, always
-		// because.. well, the new ones dont fire anything.. (http://api.jquery.com/jquery.ajax/)
-		success: coalback,
-		error: function() {
-			console.log("error in ajax...")
-		},
-		complete: function(e, xhr, settings) {
-			// console.log(stringForServer);
-			// console.log("status code: ", e.status )
-		},
-	});
+	clearTimeout(timeout);
+	timeout = setTimeout(function() {
+		$.ajax({
+			url: "http://nlp.fi.muni.cz/projekty/predictive/predict.py?input=" + stringForServer,
+			// using supposedly depricated done, error, complete instead of new done, fail, always
+			// because.. well, the new ones dont fire anything.. (http://api.jquery.com/jquery.ajax/)
+			success: coalback,
+			error: function() {
+				console.log("error in ajax...")
+			},
+			complete: function(e, xhr, settings) {
+				// console.log(stringForServer);
+				// console.log("status code: ", e.status )
+			},
+		});
+	}, 400);
+	
 	// return ["radši", "radil", "raději", "rada", "radosti", "radost", "radnice", "radu", "rady", "rad", "ranní"];
 }
 
@@ -62,7 +78,6 @@ function printCompletion(el, text) {
 
 function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
 
-	console.log(suggestions);
 	suggestions = suggestions.split("\t");
 	// discard words shorter than a few characters
 	while (suggestions[0].length < 4) {
@@ -80,17 +95,17 @@ function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
 		//not entirely bullet proof - can replace sth else in the word
 		var completion = suggestion.replace(currentWord, "");
 		printCompletion(shadowId, completion);
-		if (press.keyCode == 9) {
-			printCompletion(editorId, completion);
-		}
+		// if (press.keyCode == 9) {
+		// 	printCompletion(editorId, completion);
+		// }
 	}
 
 	else if (currentWord == " ") {
 		var completion = suggestion; // just to not make this so confusing
 		printCompletion(shadowId, completion);
-		if (press.keyCode == 9) {
-			printCompletion(editorId, completion);
-		}
+		// if (press.keyCode == 9) {
+		// 	printCompletion(editorId, completion);
+		// }
 	}
 
 	return completion;
@@ -119,10 +134,24 @@ function main(editorId, shadowId, press) {
 	var amount = 3;
 	var editorText = $("#" + editorId).html();
 
-	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
 	var currentWord =  words[words.length-1];
-	getSuggestions(words, amount, handleSuggestion.bind(null, currentWord, editorId, shadowId, press));
+	getSuggestions(
+		words, 
+		amount, 
+		currentWord, 
+		editorId,
+		shadowId, 
+		press, 
+		handleSuggestion.bind(
+			null, 
+			currentWord, 
+			editorId, 
+			shadowId, 
+			press
+			)
+		);
+	copyContent(editorText, shadowId);
 	// return 0;
 	// var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
 	// return completion;
@@ -130,6 +159,7 @@ function main(editorId, shadowId, press) {
 
 $( document ).ready(function() {
 	var completion;
+	var idleState = false;
 	var editorId = 'editor1';
 	var shadowId = 'shadow1';
 
@@ -147,7 +177,7 @@ $( document ).ready(function() {
 	};
 
 	function onKeyUp(e) {
-		main(editorId, shadowId, e)
+		main(editorId, shadowId, e);
 	};
 
 });
