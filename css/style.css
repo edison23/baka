@@ -1,14 +1,26 @@
 /* 2015-07-25 20:40:42 --zmena na novy napad */
 
 body {
-	padding: 5px;
+	padding: 25px;
+}
+
+h1 {
+	font-size: 200%;
+	margin-bottom: 40px;
+	text-align: right;
+}
+
+#wrapper {
+	max-width: 50%;
 }
 
 .edit {
 	height: 300px;
 	width: 100%;
-	border: 1px solid black;
+	border: 1px solid #888;
 	position: relative;
+	padding: 10px;
+	font-size: 120%;
 }
 
 #editor1 {
