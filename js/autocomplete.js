@@ -25,12 +25,12 @@ function getSuggestions(words, amount, currentWord, editorId, shadowId, press, c
 	// this tests for tab key and then copies the last word from shadow editor
 	// as that should be the completion
 	// WTF
-	if (press.keyCode == 9) {
-		var shadowText = $('#'+shadowId).html();
-		var shadowLast = sliceContent(shadowText).pop();
-		var completion = shadowLast.replace(currentWord, "");
-		printCompletion(editorId, completion);
-	}
+	// if (press.keyCode == 9) {
+	// 	var shadowText = $('#'+shadowId).html();
+	// 	var shadowLast = sliceContent(shadowText).pop();
+	// 	var completion = shadowLast.replace(currentWord, "");
+	// 	printCompletion(editorId, completion);
+	// }
 
 	var stringForServer = ""
 	if (words.length <= amount) {
@@ -53,7 +53,7 @@ function getSuggestions(words, amount, currentWord, editorId, shadowId, press, c
 				// console.log("status code: ", e.status )
 			},
 		});
-	}, 400);
+	}, 250);
 	
 	// return ["radši", "radil", "raději", "rada", "radosti", "radost", "radnice", "radu", "rady", "rad", "ranní"];
 }
@@ -77,6 +77,9 @@ function printCompletion(el, text) {
 }
 
 function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
+
+	editorText = $("#" + editorId).html();
+	copyContent(editorText, shadowId);
 
 	suggestions = suggestions.split("\t");
 	// discard words shorter than a few characters
@@ -111,6 +114,18 @@ function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
 	return completion;
 }
 
+function lastWord(t) {
+	return t.split(/[ ,-]+/).pop();
+}
+
+function insertCompletion(editorId, shadowId) {
+	suggestion = lastWord($('#' + shadowId).text());
+	currentWord = lastWord($('#' + editorId).text());
+	completion = suggestion.replace(currentWord, "");
+	printCompletion(editorId, completion);
+	return completion;
+}
+
 function savePosition(el) {
 	return window.getSelection().getRangeAt(0);
 }
@@ -134,6 +149,7 @@ function main(editorId, shadowId, press) {
 	var amount = 3;
 	var editorText = $("#" + editorId).html();
 
+	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
 	var currentWord =  words[words.length-1];
 	getSuggestions(
@@ -151,7 +167,6 @@ function main(editorId, shadowId, press) {
 			press
 			)
 		);
-	copyContent(editorText, shadowId);
 	// return 0;
 	// var completion = selectSuggestion(suggestions, words[words.length-1], shadowId, press);
 	// return completion;
@@ -168,11 +183,12 @@ $( document ).ready(function() {
 
 	function onKeyDown(e) {
 		if (e.keyCode == 9) {
+			e.preventDefault();
+			// console.log(lastWord($('#shadow1').text()));
 			var position = savePosition($("#" + editorId));
 			var pos = position.startOffset;
-			e.preventDefault();
-			// insertCompletion(editorId, completion);
-			// restorePosition(pos+completion.length, document.getElementById(editorId));
+			completion = insertCompletion(editorId, shadowId);
+			restorePosition(pos+completion.length, document.getElementById(editorId));
 		};
 	};
 
