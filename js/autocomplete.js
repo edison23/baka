@@ -36,8 +36,8 @@ function getSuggestions(words, amount, currentWord, editorId, shadowId, press, c
 	if (words.length <= amount) {
 		amount = words.length;
 	}
-	stringForServer = words.slice(words.length-amount, words.length).join("+");
-
+	stringForServer = encodeURI(words.slice(words.length-amount, words.length).join("+"));
+	console.log(stringForServer);
 	clearTimeout(timeout);
 	timeout = setTimeout(function() {
 		$.ajax({
