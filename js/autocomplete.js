@@ -119,6 +119,7 @@ function handleSuggestion(currentWord, editorId, shadowId, press, serverResponse
 		printCompletion(shadowId, completion);
 	}
 
+	showAlternatives(editorId);
 	return completion;
 }
 
@@ -155,6 +156,7 @@ function restorePosition(pos, el) {
 	sel.addRange(range);
 }
 
+// http://stackoverflow.com/a/6847328/2216968
 function getSelectionCoords(win) {
     win = win || window;
     var doc = win.document;
@@ -208,6 +210,7 @@ function doStuffOnKeyUp(editorId, shadowId, press) {
 	var amount = 3;
 	var editorText = $("#" + editorId).html();
 
+	destroyAlternatives()
 	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
 	var currentWord =  words[words.length-1];
@@ -225,12 +228,31 @@ function doStuffOnKeyUp(editorId, shadowId, press) {
 		);
 }
 
+function showAlternatives(editorId) {
+	caretPos = getSelectionCoords();
+	var styles = {
+		display: "block",
+		top: caretPos.y + 30 + "px",
+		left: caretPos.x + "px"
+	}
+	$('#alternatives').css(styles);
+	for (i = 0; i <= suggestions.length-1; i++) {
+		$('#alternatives').append('<span id="altr-' + i + '">' + suggestions[i] + '</span>');
+		$('#alternatives #altr-0').css("display", "none");
+	}
+}
+
+function destroyAlternatives() {
+	console.log("penis");
+	$('#alternatives').empty().css("display", "none");
+
+}
+
 function replaceCompletion(completion, editorId, shadowId) {
 	editorText = editorId.html();
 	n = editorText.lastIndexOf(" ");
-	console.log("sdfg", n);
 	if (n > 0) {
-		editorText = editorText.substring(0, n+1) + completion
+		editorText = editorText.substring(0, n+1) + completion + "<br>"
 		editorId.html(editorText);
 		copyContent(editorText, shadowId);
 	}
@@ -246,12 +268,17 @@ $( document ).ready(function() {
 	function onKeyDown(e) {
 		if (e.keyCode == 9 && tabPress == true) {
 			e.preventDefault();
-			console.log(suggestions);
-			suggestIndex++;
-			replaceCompletion(suggestions[suggestIndex], $('#' + editorId), shadowId)
+			$('#altr-' + suggestIndex).css("display", "initial")
 			if (suggestIndex > suggestions.length - 2) {
 				suggestIndex = -1;
 			}
+			suggestIndex++;
+			$('#altr-' + suggestIndex).css("display", "none").removeClass("next");
+			// this is sooo retarded, Y U no add up normally?
+			next = suggestIndex<3 ? suggestIndex + 1 : 0;
+			console.log(suggestIndex, next);
+			$('#altr-' + next).addClass("next");
+			replaceCompletion(suggestions[suggestIndex], $('#' + editorId), shadowId)
 			restorePosition($('#' + editorId).text().length, document.getElementById(editorId));
 		}
 

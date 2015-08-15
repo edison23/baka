@@ -52,3 +52,21 @@ h1 {
 .completion {
 	display: block;
 }
+
+#alternatives {
+	display: none;
+	position: absolute;
+	min-width: 10px;
+	font-size: 80%;
+	background-color: #ddd;
+	padding: 3px;
+}
+
+#alternatives span {
+	margin-right: 6px;
+	color: #888;
+}
+
+#alternatives .next {
+	color: #333 !important;
+}
