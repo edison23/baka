@@ -1,5 +1,11 @@
 // global var (i know, i know) for delaying ajax calls
 var timeout;
+var tabPress = false;
+
+// and this is here bcs the author is stupid faggot unable to properly write
+// this shit, meh
+var suggestions = [];
+var suggestIndex = 0;
 
 // copy content of editor to shadow editor
 function copyContent(content, el) {
@@ -82,34 +88,34 @@ function printCompletion(el, text) {
 }
 
 // callback function for ajax to deal with the suggestions server returns
-function handleSuggestion(currentWord, editorId, shadowId, press, suggestions) {
-
+function handleSuggestion(currentWord, editorId, shadowId, press, serverResponse) {
 	// copy editor text to shadow editor again to prevent chaing new suggests
 	// after previous suggestions (little inefficient, i know)
 	editorText = $("#" + editorId).html();
 	copyContent(editorText, shadowId);
 
-	suggestions = suggestions.split("\t");
+	serverResponse = serverResponse.split("\t");
 	
 	// discard words shorter than a few characters
-	while (suggestions[0].length < 4) {
-		suggestions = suggestions.slice(1,suggestions.length);
+	while (serverResponse[0].length < 4) {
+		serverResponse = serverResponse.slice(1,serverResponse.length);
 	}
 
-	// for now only one completion supported
-	suggestion = suggestions[0].replace(/\n/g, "");
+	// the first suggest is usually infested with a newline for some reason
+	serverResponse[0] = serverResponse[0].replace(/\n/g, "");
 
+	suggestions = serverResponse.slice(0,4);
 
 	// check if the suggestion actually is the beggining of the word (safety
 	// measure) and there hasn't been a space at the end of line
-	if (suggestion.indexOf(currentWord) >= 0 && currentWord != " ") {
+	if (suggestions[0].indexOf(currentWord) >= 0 && currentWord != " ") {
 		//not entirely bullet proof - can replace sth else in the word
-		var completion = suggestion.replace(currentWord, "");
+		var completion = suggestions[0].replace(currentWord, "");
 		printCompletion(shadowId, completion);
 	}
 
 	else if (currentWord == " ") {
-		var completion = suggestion; // just to not make this so confusing
+		var completion = suggestions[0]; // just to not make this so confusing
 		printCompletion(shadowId, completion);
 	}
 
@@ -149,6 +155,54 @@ function restorePosition(pos, el) {
 	sel.addRange(range);
 }
 
+function getSelectionCoords(win) {
+    win = win || window;
+    var doc = win.document;
+    var sel = doc.selection, range, rects, rect;
+    var x = 0, y = 0;
+    if (sel) {
+        if (sel.type != "Control") {
+            range = sel.createRange();
+            range.collapse(true);
+            x = range.boundingLeft;
+            y = range.boundingTop;
+        }
+    } else if (win.getSelection) {
+        sel = win.getSelection();
+        if (sel.rangeCount) {
+            range = sel.getRangeAt(0).cloneRange();
+            if (range.getClientRects) {
+                range.collapse(true);
+                rects = range.getClientRects();
+                if (rects.length > 0) {
+                    rect = rects[0];
+                }
+                x = rect.left;
+                y = rect.top;
+            }
+            // Fall back to inserting a temporary element
+            if (x == 0 && y == 0) {
+                var span = doc.createElement("span");
+                if (span.getClientRects) {
+                    // Ensure span has dimensions and position by
+                    // adding a zero-width space character
+                    span.appendChild( doc.createTextNode("\u200b") );
+                    range.insertNode(span);
+                    rect = span.getClientRects()[0];
+                    x = rect.left;
+                    y = rect.top;
+                    var spanParent = span.parentNode;
+                    spanParent.removeChild(span);
+
+                    // Glue any broken text nodes back together
+                    spanParent.normalize();
+                }
+            }
+        }
+    }
+    return { x: x, y: y };
+}
+
 // main function that runs on every keyup (except on <TAB>)
 function doStuffOnKeyUp(editorId, shadowId, press) {
 	var amount = 3;
@@ -157,6 +211,7 @@ function doStuffOnKeyUp(editorId, shadowId, press) {
 	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
 	var currentWord =  words[words.length-1];
+	// caretPos = getSelectionCoords();
 	getSuggestions(
 		words, 
 		amount, 
@@ -170,6 +225,17 @@ function doStuffOnKeyUp(editorId, shadowId, press) {
 		);
 }
 
+function replaceCompletion(completion, editorId, shadowId) {
+	editorText = editorId.html();
+	n = editorText.lastIndexOf(" ");
+	console.log("sdfg", n);
+	if (n > 0) {
+		editorText = editorText.substring(0, n+1) + completion
+		editorId.html(editorText);
+		copyContent(editorText, shadowId);
+	}
+}
+
 $( document ).ready(function() {
 	var editorId = 'editor1';
 	var shadowId = 'shadow1';
@@ -178,17 +244,31 @@ $( document ).ready(function() {
 	document.getElementById('editor1').addEventListener("keyup", onKeyUp);
 
 	function onKeyDown(e) {
-		if (e.keyCode == 9) {
+		if (e.keyCode == 9 && tabPress == true) {
 			e.preventDefault();
-			var position = savePosition($("#" + editorId));
-			var pos = position.startOffset;
+			console.log(suggestions);
+			suggestIndex++;
+			replaceCompletion(suggestions[suggestIndex], $('#' + editorId), shadowId)
+			if (suggestIndex > suggestions.length - 2) {
+				suggestIndex = -1;
+			}
+			restorePosition($('#' + editorId).text().length, document.getElementById(editorId));
+		}
+
+		else if (e.keyCode == 9) {
+			e.preventDefault();
+			// var position = savePosition($("#" + editorId));
+			// var pos = position.startOffset;
 			var completion = insertCompletion(editorId, shadowId);
-			restorePosition(pos+completion.length, document.getElementById(editorId));
+			// restorePosition(pos+completion.length, document.getElementById(editorId));
+			restorePosition($('#' + editorId).text().length, document.getElementById(editorId));
+			tabPress = true;
 		};
 	};
 
 	function onKeyUp(e) {
 		if (e.keyCode != 9) {
+			tabPress = false;
 			doStuffOnKeyUp(editorId, shadowId, e);
 		};
 	};
