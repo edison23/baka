@@ -238,8 +238,9 @@ function showAlternatives(editorId) {
 	$('#alternatives').css(styles);
 	for (i = 0; i <= suggestions.length-1; i++) {
 		$('#alternatives').append('<span id="altr-' + i + '">' + suggestions[i] + '</span>');
-		$('#alternatives #altr-0').css("display", "none");
+		// $('#alternatives #altr-0').css("display", "none");
 	}
+	$('#altr-' + 0).addClass("current");
 }
 
 function destroyAlternatives() {
@@ -268,16 +269,18 @@ $( document ).ready(function() {
 	function onKeyDown(e) {
 		if (e.keyCode == 9 && tabPress == true) {
 			e.preventDefault();
-			$('#altr-' + suggestIndex).css("display", "initial")
-			if (suggestIndex > suggestions.length - 2) {
+			if (suggestIndex >= suggestions.length - 1) {
 				suggestIndex = -1;
 			}
+
 			suggestIndex++;
-			$('#altr-' + suggestIndex).css("display", "none").removeClass("next");
+
 			// this is sooo retarded, Y U no add up normally?
-			next = suggestIndex<3 ? suggestIndex + 1 : 0;
-			console.log(suggestIndex, next);
-			$('#altr-' + next).addClass("next");
+			previous = suggestIndex>0 ? suggestIndex - 1 : 3;
+
+			$('#altr-' + previous).removeClass("current");
+			$('#altr-' + suggestIndex).addClass("current");
+
 			replaceCompletion(suggestions[suggestIndex], $('#' + editorId), shadowId)
 			restorePosition($('#' + editorId).text().length, document.getElementById(editorId));
 		}
