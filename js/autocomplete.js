@@ -228,6 +228,7 @@ function doStuffOnKeyUp(editorId, shadowId, press) {
 		);
 }
 
+// create the alternatives box
 function showAlternatives(editorId) {
 	caretPos = getSelectionCoords();
 	var styles = {
@@ -243,12 +244,13 @@ function showAlternatives(editorId) {
 	$('#altr-' + 0).addClass("current");
 }
 
+// delete the alternatives box's contents when not needed
 function destroyAlternatives() {
-	console.log("penis");
 	$('#alternatives').empty().css("display", "none");
 
 }
 
+// replace the current completion with the nex one
 function replaceCompletion(completion, editorId, shadowId) {
 	editorText = editorId.html();
 	n = editorText.lastIndexOf(" ");
@@ -269,6 +271,8 @@ $( document ).ready(function() {
 	function onKeyDown(e) {
 		if (e.keyCode == 9 && tabPress == true) {
 			e.preventDefault();
+			
+			// setting the correct item as current (in #alternatives)
 			if (suggestIndex >= suggestions.length - 1) {
 				suggestIndex = -1;
 			}
@@ -276,6 +280,8 @@ $( document ).ready(function() {
 			suggestIndex++;
 
 			// this is sooo retarded, Y U no add up normally?
+			// since can't compute this in the string addition, we have to do it
+			// beforehand
 			previous = suggestIndex>0 ? suggestIndex - 1 : 3;
 
 			$('#altr-' + previous).removeClass("current");
@@ -287,11 +293,7 @@ $( document ).ready(function() {
 
 		else if (e.keyCode == 9) {
 			e.preventDefault();
-			// var position = savePosition($("#" + editorId));
-			// var pos = position.startOffset;
 			var completion = insertCompletion(editorId, shadowId);
-			// restorePosition(pos+completion.length, document.getElementById(editorId));
-			restorePosition($('#' + editorId).text().length, document.getElementById(editorId));
 			tabPress = true;
 		};
 	};
