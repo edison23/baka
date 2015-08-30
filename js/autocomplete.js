@@ -33,7 +33,7 @@ function sliceContent(editorText) {
 // prepare string for server (URL) and make ajax call
 function getSuggestions(words, amount, coalback) {
 	var stringForServer = ""
-	var delay = 250 // ajax delaytak to ti 
+	var delay = 250 // ajax delay
 	
 	if (words.length <= amount) {
 		amount = words.length;
@@ -54,7 +54,7 @@ function getSuggestions(words, amount, coalback) {
 			
 			// using supposedly depricated success, error, complete instead of
 			// new done, fail, always because.. well, the new ones dont fire
-			// anything.. (http://api.jquery.com/jquery.ajax/)he
+			// anything.. (http://api.jquery.com/jquery.ajax/)
 			success: coalback,
 			error: function() {
 				console.log("Way hay, what shall we do with the drunken sailor?")
@@ -88,7 +88,9 @@ function printCompletion(el, text) {
 }
 
 // callback function for ajax to deal with the suggestions server returns
-function handleSuggestion(currentWord, editorId, shadowId, press, serverResponse) {
+function handleSuggestion(currentWord, suggestFromText, editorId, shadowId, press, serverResponse) {
+	// console.log(suggestFromText);
+
 	// copy editor text to shadow editor again to prevent chaing new suggests
 	// after previous suggestions (little inefficient, i know)
 	editorText = $("#" + editorId).html();
@@ -97,6 +99,7 @@ function handleSuggestion(currentWord, editorId, shadowId, press, serverResponse
 	serverResponse = serverResponse.split("\t");
 	
 	// discard words shorter than a few characters
+	// some conditioning might be appropriate to avoid exceptions
 	while (serverResponse[0].length < 4) {
 		serverResponse = serverResponse.slice(1,serverResponse.length);
 	}
@@ -106,16 +109,22 @@ function handleSuggestion(currentWord, editorId, shadowId, press, serverResponse
 
 	suggestions = serverResponse.slice(0,4);
 
+	if (suggestFromText) {
+		suggestions.unshift(suggestFromText);
+		suggestions.pop();
+	}
+
 	// check if the suggestion actually is the beggining of the word (safety
 	// measure) and there hasn't been a space at the end of line
 	if (suggestions[0].indexOf(currentWord) >= 0 && currentWord != " ") {
+		
 		//not entirely bullet proof - can replace sth else in the word
 		var completion = suggestions[0].replace(currentWord, "");
 		printCompletion(shadowId, completion);
 	}
 
 	else if (currentWord == " ") {
-		var completion = suggestions[0]; // just to not make this so confusing
+		var completion = suggestions[0]; // just to make this less confusing
 		printCompletion(shadowId, completion);
 	}
 
@@ -205,22 +214,44 @@ function getSelectionCoords(win) {
     return { x: x, y: y };
 }
 
+function findLastSimiliarWord(arr, substr, minLen) {
+	
+	// iterate in the text from the end (and leave out the last word, which is
+	// actually the current one)
+	for (i = arr.length-2; i >= 0; i--) {
+		if (arr[i].indexOf(substr) == 0 && arr[i].length >= minLen) {
+			return arr[i];
+		}
+	}
+}
+
 // main function that runs on every keyup (except on <TAB>)
 function doStuffOnKeyUp(editorId, shadowId, press) {
 	var amount = 3;
 	var editorText = $("#" + editorId).html();
+	var suggestFromText = "";
 
 	destroyAlternatives()
 	copyContent(editorText, shadowId);
 	var words = sliceContent(editorText);
 	var currentWord =  words[words.length-1];
-	// caretPos = getSelectionCoords();
+
+	// search for similiar words already written if current word is at least 3
+	// chars long
+	if (currentWord.length > 2) {
+		
+		// minimal lenght of word to select to suggestions
+		var minLen = 4;
+		suggestFromText = findLastSimiliarWord(words, currentWord, minLen);
+	}
+
 	getSuggestions(
 		words, 
 		amount, 
 		handleSuggestion.bind(
 			null, 
 			currentWord, 
+			suggestFromText,
 			editorId, 
 			shadowId, 
 			press
@@ -230,6 +261,10 @@ function doStuffOnKeyUp(editorId, shadowId, press) {
 
 // create the alternatives box
 function showAlternatives(editorId) {
+	
+	// reset alternatives (prevents chaining of new and old ones in some cases)
+	destroyAlternatives();
+
 	caretPos = getSelectionCoords();
 	var styles = {
 		display: "block",
