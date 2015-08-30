@@ -296,7 +296,6 @@ function showAlternatives(editorId) {
 
 // delete the alternatives box's contents when not needed
 function destroyAlternatives() {
-	console.log('penis');
 	$('#alternatives').empty().css("display", "none");
 
 }
@@ -305,11 +304,11 @@ function destroyAlternatives() {
 function replaceCompletion(completion, editorId, shadowId) {
 	editorText = editorId.html();
 	n = editorText.lastIndexOf(" ");
-	if (n > 0) {
-		editorText = editorText.substring(0, n+1) + completion + "<br>"
-		editorId.html(editorText);
-		copyContent(editorText, shadowId);
-	}
+
+	// for some reason this works even with n == -1 ..dont ask me how	
+	editorText = editorText.substring(0, n+1) + completion + "<br>"
+	editorId.html(editorText);
+	copyContent(editorText, shadowId);
 }
 
 $( document ).ready(function() {
