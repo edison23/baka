@@ -27,6 +27,13 @@ function sliceContent(editorText) {
 		words.push(" ");
 	}
 
+	// if there has been space(s) at the start of text field, word[0] is empty,
+	// which breaks the string sent to server (plus on the beginning causes
+	// empty server response); thus we have to remove the empty element
+	if (words[0] == "") {
+		words.shift();
+	}
+
 	return words;
 }
 
@@ -44,7 +51,7 @@ function getSuggestions(words, amount, coalback) {
 		slice(words.length-amount, words.length).
 		join("+")
 		);
-	
+
 	clearTimeout(timeout);
 	timeout = setTimeout(function() {
 		$.ajax({
