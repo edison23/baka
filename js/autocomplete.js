@@ -103,19 +103,27 @@ function handleSuggestion(currentWord, suggestFromText, editorId, shadowId, pres
 	editorText = $("#" + editorId).html();
 	copyContent(editorText, shadowId);
 
+	// discard anything in suggestions (yea, using global vars sux hard, need to
+	// fix this shit)
+	suggestions = [];
+
 	serverResponse = serverResponse.split("\t");
-	
-	// discard words shorter than a few characters
-	// some conditioning might be appropriate to avoid exceptions
-	while (serverResponse[0].length < 4) {
-		serverResponse = serverResponse.slice(1,serverResponse.length);
-	}
 
 	// the first suggest is usually infested with a newline for some reason
 	serverResponse[0] = serverResponse[0].replace(/\n/g, "");
+	
+	// discard words shorter than a few characters
+	// some conditioning might be appropriate to avoid exceptions
+	var temp = []
+	for (i = 0; i <= 4; i++) {
+		if (serverResponse[i].length >= 3) {
+			suggestions.push(serverResponse[i])
+		}
+	}
 
-	suggestions = serverResponse.slice(0,4);
-
+	// if there has been word which can be completion to current word previously
+	// in text, put it on the beginning of the array and discard the last
+	// suggestion from server
 	if (suggestFromText) {
 		suggestions.unshift(suggestFromText);
 		suggestions.pop();
@@ -288,6 +296,7 @@ function showAlternatives(editorId) {
 
 // delete the alternatives box's contents when not needed
 function destroyAlternatives() {
+	console.log('penis');
 	$('#alternatives').empty().css("display", "none");
 
 }
