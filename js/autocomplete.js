@@ -2,8 +2,7 @@
 var timeout;
 var tabPress = false;
 
-// and this is here bcs the author is stupid faggot unable to properly write
-// this shit, meh
+// other global vars
 var suggestions = [];
 var suggestIndex = 0;
 
@@ -314,9 +313,16 @@ function replaceCompletion(completion, editorId, shadowId) {
 $( document ).ready(function() {
 	var editorId = 'editor1';
 	var shadowId = 'shadow1';
+	var keyCount = 0;
 
 	document.getElementById('editor1').addEventListener("keydown", onKeyDown);
 	document.getElementById('editor1').addEventListener("keyup", onKeyUp);
+	document.getElementById('editor1').addEventListener("keypress", onKeyPress);
+
+	function onKeyPress(e) {
+		keyCount++;
+		console.log(keyCount);
+	};
 
 	function onKeyDown(e) {
 		if (e.keyCode == 9 && tabPress == true) {
@@ -329,7 +335,6 @@ $( document ).ready(function() {
 
 			suggestIndex++;
 
-			// this is sooo retarded, Y U no add up normally?
 			// since can't compute this in the string addition, we have to do it
 			// beforehand
 			previous = suggestIndex>0 ? suggestIndex - 1 : 3;
