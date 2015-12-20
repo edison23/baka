@@ -1,72 +1,41 @@
-/* 2015-07-25 20:40:42 --zmena na novy napad */
-
-body {
-	padding: 25px;
-}
-
 h1 {
 	font-size: 200%;
+	margin-top: 30px;
 	margin-bottom: 40px;
 	text-align: right;
 }
 
 #wrapper {
-	max-width: 50%;
+	width: 92%;
+	max-width: 900px;
+	margin: 0 auto;
 }
 
-.edit {
+#justForDesign {
+	height: 200px;
+	margin-bottom: -200px;
+	background-color: #FFD699;
+	position: absolute:
+	top: 0px;
+}
+
+#shadow1 {
+	background-color: #fff;
+}
+/* class for custom styling of the editor (keeps both main and shadow editor in visual sync */
+.nlpautocomplete {
+	color: #444;
+	top: 0px;
+	left: 0px;
 	height: 300px;
 	width: 100%;
-	border: 1px solid #888;
+	border: 1px solid #bbb;
 	position: relative;
 	padding: 10px;
 	font-size: 120%;
 }
 
-#editor1 {
-	color: #444;
-	position: absolute;
-	top: 0px;
-	left: 0px;
-}
-
-#shadow1 {
-	color: #888;
-	position: absolute;
-	top: 0px;
-	left: 0px;
-}
-
-#wrapper1 {
-	position: relative;
-}
-
-#suggests {
-	top: 0;
-	left: 20px;
-	min-height: 25px;
-	position: absolute;
-	visibility: hidden;
-}
-
-.completion {
-	display: block;
-}
-
-#alternatives {
-	display: none;
-	position: absolute;
-	min-width: 10px;
-	font-size: 80%;
-	background-color: #ddd;
-	padding: 3px;
-}
-
-#alternatives span {
-	margin-right: 6px;
-	color: #888;
-}
-
-#alternatives .current {
-	color: #333 !important;
+.authors {
+	text-align: center;
+	margin-top: 50px;
 }

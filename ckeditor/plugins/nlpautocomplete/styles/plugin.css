@@ -1,0 +1,47 @@
+/*#editor1 {
+	color: #444;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}*/
+
+#shadow1 {
+	color: #888 !important;
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
+#wrapper1 {
+	position: relative;
+}
+
+#suggests {
+	top: 0;
+	left: 20px;
+	min-height: 25px;
+	position: absolute;
+	visibility: hidden;
+}
+
+.completion {
+	display: block;
+}
+
+#alternatives {
+	display: none;
+	position: absolute;
+	min-width: 10px;
+	font-size: 80%;
+	background-color: #ddd;
+	padding: 3px;
+}
+
+#alternatives span {
+	margin-right: 6px;
+	color: #888;
+}
+
+#alternatives .current {
+	color: #333 !important;
+}

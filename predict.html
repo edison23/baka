@@ -1,30 +1,26 @@
 <html>
-<head>
-	<meta charset="utf-8">
-	<script src="ckeditor/ckeditor.js"></script>
-	<!-- // <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script> -->
-	<link rel="stylesheet" href="css/bootstrap.min.css">
-	<link rel="stylesheet" href="css/style.css">
+	<head>
+		<meta charset="utf-8">
+		<script src="ckeditor/ckeditor.js"></script>
+		<link rel="stylesheet" href="css/bootstrap.min.css">
+		<link rel="stylesheet" href="css/style.css">
+		<script src="js/jquery-2.1.3.js"></script>
 
-	<script src="js/jquery-2.1.3.js"></script>
-
-	<script src="js/autocomplete.js"></script>
-</head>
-<body>
-	<div id="wrapper">
-		<h1>Baka baka</h1>
-
-		<div class="wrapper" id="wrapper1">
-			<div id="shadow1" class="edit">Start typing here.</div>
-			<div class="ckeditor edit" id="editor1" contentEditable></div>
+	</head>
+	<body>
+		<div id="justForDesign"></div>
+		<div id="wrapper">
+			<h1>NLPAutocomplete demonstration page</h1>
+			<div class="ckeditor" id="editor1" contentEditable="true"></div>
+		<div class="authors">Masarykova univerzita<br>2015<br>David Klement, Adam Rambousek</div>
 		</div>
-	</div>
-	<div id="alternatives"> </div>
-	<script>
-	    // Turn off automatic editor creation first.
-	    CKEDITOR.disableAutoInline = true;
-	    CKEDITOR.inline( 'editor1' );
-
-	</script>
-</body>
+		
+		<script>
+			// Turn off automatic editor creation first.
+			CKEDITOR.disableAutoInline = true;
+			CKEDITOR.config.extraPlugins = 'nlpautocomplete';
+			//CKEDITOR.config.contentsCss = ["https://nlp.fi.muni.cz/~xrambous/ck/baka/ckeditor/contents.css?t=FB9E"];
+			CKEDITOR.inline( 'editor1' );
+		</script>
+	</body>
 </html>
